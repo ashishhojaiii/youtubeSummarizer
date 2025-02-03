@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playwrite+FR+Trad:wght@100..400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-gray-900 via-black to-gray-900 min-h-screen text-gray-300">
+
+    <!-- Slogan at the very top -->
+    <p class="text-center text-4xl text-gray-400 mb-6 mt-10 font-bold" style="font-family: 'Playwrite FR Trad', serif;">Get The Sauce</p>
+
+    <!-- Add Note Section -->
+    <div class="w-full max-w-lg mx-auto mt-4">
+        <div class="border border-red-500 bg-red-500/10 text-red-500 rounded-lg p-4 text-center">
+            <p class="text-sm font-poppins">⚠️ <strong>Note:</strong> The video should have captions for the summarizer to work effectively.</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-full max-w-lg bg-gray-950 text-white shadow-md rounded-lg p-6 mx-auto">
+        <p class="text-center text-xl text-gray-400 mb-4 font-poppins">From Videos to Clarity in Seconds</p>
+
+        <div class="w-full bg-gray-800 text-white shadow-md rounded-lg p-6">
+            <h1 class="text-2xl font-bold text-center mb-4 font-poppins">VideoIQ</h1>
+
+            <form id="summarizer-form" class="space-y-4">
+                <!-- YouTube URL Input -->
+                <input 
+                    type="text" 
+                    name="url" 
+                    placeholder="Enter the YouTube video URL..." 
+                    class="w-full px-4 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400"
+                >
+
+                <!-- Question Input -->
+                <input 
+                    type="text" 
+                    name="question" 
+                    placeholder="What do you want to know about the video?" 
+                    class="w-full px-4 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400"
+                >
+
+                <!-- Buttons -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    Get Insights
+                </button>
+            </form>
+
+            <!-- Output Section -->
+            <div id="output-container" class="mt-6">
+                <div id="output" class="text-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-10 text-gray-400 font-poppins">
+        &copy; 2025 Ashish Hojai. All Rights Reserved.
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        const form = document.getElementById("summarizer-form");
+        const output = document.getElementById("output");
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const urlInput = form.querySelector("input[name='url']");
+            const questionInput = form.querySelector("input[name='question']");
+
+            const urlValue = urlInput.value.trim();
+            const questionValue = questionInput.value.trim();
+
+            // Validate input
+            if (!urlValue) {
+                output.innerHTML = "<p class='text-red-500'>Please enter a YouTube URL.</p>";
+                return;
+            }
+
+            // Dynamic loading text
+            const loadingTexts = [
+                "Analyzing the video...",
+                "Crunching the data...",
+                "Processing the content...",
+                "Extracting insights...",
+                "Summing it all up..."
+            ];
+            let index = 0;
+            const interval = setInterval(() => {
+                output.innerHTML = `<p>${loadingTexts[index]}</p>`;
+                index = (index + 1) % loadingTexts.length;
+            }, 1500);
+
+            // Show initial loading message
+            output.innerHTML = "<p>Starting summarization...</p>";
+
+            // Send POST request
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: urlValue, question: questionValue }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                clearInterval(interval);
+                const result = data.result || "No summary available.";
+                
+                // Parse the summarized text into bullet points
+                const points = result.split('.').filter(sentence => sentence.trim() !== '').map(sentence => `<li>${sentence.trim()}</li>`).join('');
+                
+                // Display points in the output container
+                output.innerHTML = `
+                    <ul class="list-disc text-left mx-auto text-gray-300 space-y-2 pl-6">
+                        ${points}
+                    </ul>
+                `;
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                clearInterval(interval);
+                output.innerHTML = "<p class='text-red-500'>An error occurred. Please try again.</p>";
+            });
+        });
+    </script>
+</body>
+</html>
