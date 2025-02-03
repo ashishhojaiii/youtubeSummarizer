@@ -52,7 +52,7 @@ app.post("/", async (req, res) => {
     });
 
     let fulltext = globaltranscript.join(',');
-    const genAI = new GoogleGenerativeAI("AIzaSyAy21yHlGAoeWXsycUKi2JtvB-S0vk_vis");
+    const genAI = new GoogleGenerativeAI("YOUR_API");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     let prompt = `${question} ${fulltext}`;
     const result = await model.generateContent(prompt);
